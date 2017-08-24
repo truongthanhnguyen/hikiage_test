@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  amazon_authorization_id: MyString
+  capture_reference_id: MyString
+  amazon_capture_id: MyString
+  capture_amount: 1
+  refunded_amount: 1
+  capture_fee: 1
+  status: MyString
+
+two:
+  amazon_authorization_id: MyString
+  capture_reference_id: MyString
+  amazon_capture_id: MyString
+  capture_amount: 1
+  refunded_amount: 1
+  capture_fee: 1
+  status: MyString

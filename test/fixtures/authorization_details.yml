@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  amazon_authorization_id: MyString
+  authorization_reference_id: MyString
+  amazon_order_reference_id: MyString
+  status: MyString
+
+two:
+  amazon_authorization_id: MyString
+  authorization_reference_id: MyString
+  amazon_order_reference_id: MyString
+  status: MyString

@@ -1,0 +1,10 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Total:</strong>
+  <%= @order.total %>
+</p>
+
+<%= link_to 'Back', orders_path %>
+<%= link_to 'Authorize', authorize_order_path(@order) %>
+<%= link_to 'Capture', capture_order_path(@order) %>
