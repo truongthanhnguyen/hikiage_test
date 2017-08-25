@@ -1,5 +1,6 @@
 class OrdersController < ApplicationController
   before_action :set_order, only: [:show, :edit, :update, :destroy]
+  require "pay_with_amazon"
 
   # GET /orders
   # GET /orders.json
@@ -30,11 +31,79 @@ class OrdersController < ApplicationController
       order: @order, status: "Open"
     SaveOrderReference.new(params[:order][:order_reference_id], params[:order][:total]).call
 
-    format.html { redirect_to @order, notice: 'Order was successfully created.' }
+    format.html { redirect_to @order, notice: "Order was successfully created." }
+
+    merchant_id = "A3QCQLYZKBHFRS"
+    access_key = "AordersFPDNE5WCULPAQ"
+    secret_key = "D+nDDFrrM1a19+T7arXuUBENbZOqw2a2saXniyFk"
+
+    client = PayWithAmazon::Client.new(
+      merchant_id,
+      access_key,
+      secret_key,
+      sandbox: true,
+      currency_code: :usd,
+      region: :na
+      )
+
+    amazon_order_reference_id = "AMAZON_ORDER_REFERENCE_ID"
+    address_consent_token = "ADDRESS_CONSENT_TOKEN"
+    amount = 106
+
+    client.get_order_reference_details(
+      amazon_order_reference_id,
+      amount,
+      seller_note: "Lorem ipsum dolor",
+      seller_order_id: "5678-23",
+      store_name: "CourtAndCherry.com",
+      address_consent_token: address_consent_token,
+      mws_auth_token: "amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE"
+      ) 
+    
+    client.confirm_order_reference(
+      amazon_order_reference_id,
+      mws_auth_token: "amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE"
+      )
   end
 
   def authorize
+    merchant_id = "A3QCQLYZKBHFRS"
+    access_key = "AordersFPDNE5WCULPAQ"
+    secret_key = "D+nDDFrrM1a19+T7arXuUBENbZOqw2a2saXniyFk"
 
+    client = PayWithAmazon::Client.new(
+      merchant_id,
+      access_key,
+      secret_key,
+      sandbox: true,
+      currency_code: :usd,
+      region: :na
+    )
+
+    amazon_order_reference_id = 'AMAZON_ORDER_REFERENCE_ID'
+    authorization_reference_id = 'test_authorize_1'
+    amount = 94.50
+
+    client.authorize(
+      amazon_order_reference_id,
+      authorization_reference_id,
+      amount,
+      seller_authorization_note: 'Lorem ipsum dolor',
+      transaction_timeout: 60, 
+      mws_auth_token: 'amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE'
+    )
+    Authorize Synchronous API Call
+
+    # Authorize - Synchronous 
+
+    client.authorize(
+      amazon_order_reference_id,
+      authorization_reference_id,
+      amount,
+      seller_authorization_note: 'Lorem ipsum dolor',
+      transaction_timeout: 0, 
+      mws_auth_token: 'amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE'
+    )
   end
 
   def capture
@@ -54,7 +123,7 @@ class OrdersController < ApplicationController
   def update
     respond_to do |format|
       if @order.update(order_params)
-        format.html { redirect_to @order, notice: 'Order was successfully updated.' }
+        format.html { redirect_to @order, notice: "Order was successfully updated." }
         format.json { render :show, status: :ok, location: @order }
       else
         format.html { render :edit }
@@ -68,7 +137,7 @@ class OrdersController < ApplicationController
   def destroy
     @order.destroy
     respond_to do |format|
-      format.html { redirect_to orders_url, notice: 'Order was successfully destroyed.' }
+      format.html { redirect_to orders_url, notice: "Order was successfully destroyed." }
       format.json { head :no_content }
     end
   end
