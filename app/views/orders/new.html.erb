@@ -9,10 +9,10 @@
   #walletWidgetDiv {width: 400px; height: 228px;}</style>
 
 <script type='text/javascript'>
-  // window.onAmazonLoginReady = function() {
-  //   console.log("Window.onAmazonLoginReady");
-  //   amazon.Login.setClientId('amzn1.application-oa2-client.6a339767de8e43488a78fd93592e3f27');
-  // };
+  window.onAmazonLoginReady = function() {
+    console.log("Window.onAmazonLoginReady");
+    amazon.Login.setClientId('amzn1.application-oa2-client.6a339767de8e43488a78fd93592e3f27');
+  };
 
   window.getParameterByName = function(name, url) {
         if (!url) url = window.location.href;

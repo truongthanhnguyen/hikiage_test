@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170523105249) do
+ActiveRecord::Schema.define(version: 20170830021445) do
 
   create_table "authorization_details", force: :cascade do |t|
     t.string   "amazon_authorization_id"
@@ -20,6 +20,7 @@ ActiveRecord::Schema.define(version: 20170523105249) do
     t.string   "status"
     t.datetime "created_at",                 null: false
     t.datetime "updated_at",                 null: false
+    t.integer  "order_reference_detail_id"
   end
 
   create_table "capture_details", force: :cascade do |t|

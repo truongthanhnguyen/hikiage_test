@@ -8,6 +8,7 @@ class SaveOrderReference
       MERCHANT_ID,
       ACCESS_KEY,
       SECRET_KEY,
+      
       sandbox: true,
       currency_code: :jpy,
       region: :jp
@@ -24,7 +25,6 @@ class SaveOrderReference
   end
 
   def call
-    binding.pry
     client.set_order_reference_details(
       @amazon_order_reference_id,
       @amount,
@@ -32,12 +32,9 @@ class SaveOrderReference
       seller_order_id: @seller_order_id,
       store_name: @store_name
     )
-    binding.pry
     client.confirm_order_reference(@amazon_order_reference_id)
-    binding.pry
     response = client.get_order_reference_details(
       @amazon_order_reference_id
     )
-    binding.pry
   end
 end
