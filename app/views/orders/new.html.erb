@@ -13,7 +13,6 @@
     console.log("Window.onAmazonLoginReady");
     amazon.Login.setClientId('amzn1.application-oa2-client.6a339767de8e43488a78fd93592e3f27');
   };
-
   window.getParameterByName = function(name, url) {
         if (!url) url = window.location.href;
         name = name.replace(/[\[\]]/g, "\\$&");
@@ -23,16 +22,13 @@
         if (!results[2]) return '';
         return decodeURIComponent(results[2].replace(/\+/g, " "));
     }
-
   var access_token = window.getParameterByName("access_token", window.location.href);
   window.access_token = access_token;
   console.log(access_token);
   console.log("testetststes");
-
   window.onAmazonPaymentsReady = function(){
     console.log("window.onAmazonPaymentsReady");
     var authRequest;
-
     if (window.access_token) {
       console.log(window.access_token)
       new OffAmazonPayments.Widgets.AddressBook({
@@ -44,7 +40,6 @@
             console.log("onOrderReferenceCreate");
             var orderReferenceId = orderReference.getAmazonOrderReferenceId();
             var access_token = window.getParameterByName("access_token", window.location.href);
-
             window.orderReferenceId = orderReferenceId;
             window.access_token = access_token;
             console.log(orderReferenceId);
@@ -57,11 +52,9 @@
             // to perform after the address is selected. The
             // amazonOrderReferenceId can be used to retrieve the address
             // details by calling the GetOrderReferenceDetails operation.
-
             // If rendering the AddressBook and Wallet widgets
             // on the same page, you do not have to provide any additional
             // logic to load the Wallet widget after the AddressBook widget.
-
             // The Wallet widget will re-render itself on all subsequent
             // onAddressSelect events without any action from you.
             // It is not recommended that you explicitly refresh it.
@@ -75,7 +68,6 @@
             // Enter code here that you want to be executed
             // when the address widget has been rendered.
           },
-
           onError: function(error) {
             console.log("error on addressBook");
             console.log(error.getErrorCode() + ': ' + error.getErrorMessage());
@@ -86,7 +78,6 @@
             // See "Handling Errors" for more information.
           }
         }).bind("addressBookWidgetDiv");
-
         new OffAmazonPayments.Widgets.Wallet({
           sellerId: 'A3QCQLYZKBHFRS',
           sandbox: 'true',
@@ -96,14 +87,12 @@
             console.log(orderReference.getID());
             // Replace this code with the action that you want to perform
             // after the payment method is chosen.
-
             // Ideally this would enable the next action for the buyer
             // including either a "Continue" or "Place Order" button.
           },
           design: {
             designMode: 'responsive'
           },
-
           onError: function(error) {
             console.log("error on Wallet");
             console.log(error.getErrorCode() + ': ' + error.getErrorMessage());
@@ -120,22 +109,43 @@
         type: "LwA",
         color: "Gold",
         size: "small",
+
+
         authorization: function() {
-          loginOptions =
-          {scope: "profile payments:widget", popup: "true", sandbox: "true"};
+          loginOptions = {scope: "profile payments:widget payments:shipping_address", popup: "true"};
           authRequest = amazon.Login.authorize (loginOptions,
-          "http://localhost:3000/orders/new");
+            function(response) {
+              addressConsentToken = response.access_token;
+            });
         },
+        onSignIn: function (orderReference) {
+          var referenceId = orderReference.getAmazonOrderReferenceId();
+
+          if (!referenceId) {
+            errorHandler(new Error('referenceId missing'));
+          } else {
+            window.location = "http://localhost:3000/orders/new" + '?referenceId=' + 
+              orderReference.getAmazonOrderReferenceId() + 
+              "&access_token=" + addressConsentToken;
+          }
+        },
+
+
+        // authorization: function() {
+        //   loginOptions =
+        //   {scope: "profile payments:widget, payments:shipping_address", popup: "true", sandbox: "true"};
+        //   var referenceID = orderReferenceId.getAmazonOrderReferenceId();
+        //   authRequest = amazon.Login.authorize (loginOptions,
+        //   "http://localhost:3000/orders/new" + '?referenceID=' +
+        //     orderReference.getAmazonOrderReferenceId() +
+        //     "&access_token=" + addressConsentToken);
+        // },
         onError: function(error) {
           // your error handling code
           alert("error　on login");
         }
       });
     }
-
-
-
-
     // if (!access_token) {return}
     $(document).ready(function(){
       $("form").submit(function(){
@@ -143,7 +153,6 @@
         $("#order_order_reference_id").val(window.orderReferenceId);
       });
     });
-
   }
 </script>
 <script async='async' type='text/javascript'
