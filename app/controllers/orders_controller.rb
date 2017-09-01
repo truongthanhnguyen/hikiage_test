@@ -25,7 +25,19 @@ class OrdersController < ApplicationController
   # POST /orders
   # POST /orders.json
   def create
-    binding.pry
+    merchant_id = "A3QCQLYZKBHFRS"
+    access_key = "AKIAJ7QFPDNE5WCULPAQ"
+    secret_key = "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"
+
+    client = PayWithAmazon::Client.new(
+      merchant_id,
+      access_key,
+      secret_key,
+      sandbox: true,
+      currency_code: :jpy,
+      region: :jp
+    )
+
     @order = Order.new order_params
 
     order_reference = OrderReferenceDetail.create amazon_order_reference_id: params[:order][:order_reference_id],
@@ -63,6 +75,14 @@ class OrdersController < ApplicationController
       format.html { redirect_to @order, notice: "Order was successfully created." }
       format.js 
     end
+
+    address_consent_token = params[:order][:access_token]
+    amazon_order_reference_id = OrderReferenceDetail.last.amazon_order_reference_id
+
+    client.get_order_reference_details(
+      amazon_order_reference_id,
+      address_consent_token: address_consent_token
+    )
   end
 
   def authorize
@@ -78,14 +98,11 @@ class OrdersController < ApplicationController
       currency_code: :jpy,
       region: :jp
     )
-
     # binding.pry
-    # amazon_order_reference_id = 'AMAZON_ORDER_REFERENCE_ID'
     amazon_order_reference_id = OrderReferenceDetail.last.amazon_order_reference_id
-    authorization_reference_id = "testtestestetests"
+    authorization_reference_id = "9_1_13_29"
     amount = 1
 
-    # binding.pry
     response = client.authorize(
       amazon_order_reference_id,
       authorization_reference_id,
@@ -93,15 +110,40 @@ class OrdersController < ApplicationController
       seller_authorization_note: 'Lorem ipsum dolor',
       transaction_timeout: 0, 
       mws_auth_token: 'amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE'
-     
     )
     
-    # binding.pry
     amazon_authorization_id = response.get_element('AuthorizeResponse/AuthorizeResult/AuthorizationDetails','AmazonAuthorizationId')
-    AuthorizationDetail.create amazon_authorization_id: response.get_element('AuthorizeResponse/AuthorizeResult/AuthorizationDetails','AmazonAuthorizationId')
-    capture_reference_id = 'capture1'
+    AuthorizationDetail.create amazon_authorization_id: amazon_authorization_id, amazon_order_reference_id: amazon_order_reference_id,
+      authorization_reference_id: authorization_reference_id
+    
 
-    client.capture(
+    # client.close_order_reference(
+    #   amazon_order_reference_id,
+    #   mws_auth_token: 'amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE'
+    # )
+
+    redirect_to orders_url
+  end
+
+  def capture
+    merchant_id = "A3QCQLYZKBHFRS"
+    access_key = "AKIAJ7QFPDNE5WCULPAQ"
+    secret_key = "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"
+
+    client = PayWithAmazon::Client.new(
+      merchant_id,
+      access_key,
+      secret_key,
+      sandbox: true,
+      currency_code: :jpy,
+      region: :jp
+    )
+    # binding.pry
+    amazon_authorization_id = AuthorizationDetail.last.amazon_authorization_id
+    capture_reference_id = "9_1_13_30"
+    amount = 1
+
+    response = client.capture(
       amazon_authorization_id,
       capture_reference_id,
       amount,
@@ -109,58 +151,44 @@ class OrdersController < ApplicationController
       mws_auth_token: 'amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE'
     )
 
+    amazon_capture_id = response.get_element('CaptureResponse/CaptureResult/CaptureDetails','AmazonCaptureId')
+    CaptureDetail.create amazon_authorization_id: amazon_authorization_id, amazon_capture_id: amazon_capture_id,
+      capture_reference_id: capture_reference_id
+
     redirect_to orders_url
   end
 
-  # def capture
-    # Capture
-    # merchant_id = "A3QCQLYZKBHFRS"
-    # access_key = "AKIAJ7QFPDNE5WCULPAQ"
-    # secret_key = "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"
-
-    # client = PayWithAmazon::Client.new(
-    #   merchant_id,
-    #   access_key,
-    #   secret_key,
-    #   sandbox: true,
-    #   currency_code: :jpy,
-    #   region: :jp
-    # )
-    
-    # binding.pry
-
-    # response = client.authorize(
-    #   amazon_order_reference_id,
-    #   authorization_reference_id,
-    #   amount,
-    #   currency_code: 'jpy', # Default: USD
-    #   seller_authorization_note: 'Lorem ipsum dolor',
-    #   transaction_timeout: 60, # Set to 0 for synchronous mode
-    #   capture_now: true # Set this to true if you want to capture the amount in the same API call
-    # )
-
-    # amazon_authorization_id = "S03-0359917-9561666-A097473"
-  #   amazon_authorization_id = response.get_element('AuthorizeResponse/AuthorizeResult/AuthorizationDetails','AmazonAuthorizationId')
-  #   capture_reference_id = 'test_capture_3'
-  #   amount = 1
-
-  #   client.capture(
-  #     amazon_authorization_id,
-  #     capture_reference_id,
-  #     amount,
-  #     seller_capture_note: 'Lorem ipsum dolor',
-  #     mws_auth_token: 'amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE'
-  #   )
-
-  #   redirect_to orders_url
-  # end
-
   def refund
+    merchant_id = "A3QCQLYZKBHFRS"
+    access_key = "AKIAJ7QFPDNE5WCULPAQ"
+    secret_key = "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"
 
+    client = PayWithAmazon::Client.new(
+      merchant_id,
+      access_key,
+      secret_key,
+      sandbox: true,
+      currency_code: :jpy,
+      region: :jp
+    )
+    # binding.pry
+    amazon_capture_id = CaptureDetail.last.amazon_capture_id
+    refund_reference_id = '9_1_13_31'
+    amount = 1
+
+    client.refund(
+      amazon_capture_id,
+      refund_reference_id,
+      amount,
+      seller_refund_note: 'Lorem ipsum dolor',
+      mws_auth_token: 'amzn.mws.4ea38b7b-f563-7709-4bae-87aeaEXAMPLE'
+    )
+
+    redirect_to orders_url
   end
 
   def ipn_process
-    binding.pry
+    # binding.pry
   end
 
   # PATCH/PUT /orders/1
