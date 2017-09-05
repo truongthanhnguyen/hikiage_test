@@ -1,7 +1,6 @@
 <h1>New Order</h1>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
 <meta name="viewport" content="width-device-width,initial-scale=1.0, maximum-scale=1.0"/>
   
 <style type="text/css">
@@ -35,23 +34,23 @@
           sellerId: 'A3QCQLYZKBHFRS',
           scope: 'payments:shipping_address',
           sandbox: 'true',
-          onOrderReferenceCreate: function(orderReference) {
+          onBillingAgreementCreate: function(billingAgreement) {
             // Here is where you can grab the Order Reference ID.
-            console.log("onOrderReferenceCreate");
-            var orderReferenceId = orderReference.getAmazonOrderReferenceId();
+            console.log("onBillingAgreementCreate");
+            var billingAgreementId = billingAgreement.getAmazonBillingAgreementId();
             var access_token = window.getParameterByName("access_token", window.location.href);
-            window.orderReferenceId = orderReferenceId;
+            window.billingAgreementId = billingAgreementId;
             window.access_token = access_token;
-            console.log(orderReferenceId);
+            console.log(billingAgreementId);
           },
-          onAddressSelect: function(orderReference) {
+          onAddressSelect: function(billingAgreement) {
             console.log("onAddressSelect");
-            console.log("orderReference.getID()");
-            console.log(orderReference.getID());
+            console.log("billingAgreement.getID()");
+            console.log(billingAgreement.getID());
             // Replace the following code with the action that you want
             // to perform after the address is selected. The
-            // amazonOrderReferenceId can be used to retrieve the address
-            // details by calling the GetOrderReferenceDetails operation.
+            // amazonbillingAgreementId can be used to retrieve the address
+            // details by calling the GetbillingAgreementDetails operation.
             // If rendering the AddressBook and Wallet widgets
             // on the same page, you do not have to provide any additional
             // logic to load the Wallet widget after the AddressBook widget.
@@ -62,9 +61,11 @@
           design: {
             designMode: 'responsive'
           },
-          onReady: function(orderReference) {
+          onReady: function(billingAgreement) {
+            var billingAgreementId = billingAgreement;
+            getAmazonbillingAgreementId();
             console.log("onReady");
-            console.log(orderReference);
+            console.log(billingAgreement);
             // Enter code here that you want to be executed
             // when the address widget has been rendered.
           },
@@ -80,11 +81,12 @@
         }).bind("addressBookWidgetDiv");
         new OffAmazonPayments.Widgets.Wallet({
           sellerId: 'A3QCQLYZKBHFRS',
+          amazonbillingAgreementId: amazonbillingAgreementId,
           sandbox: 'true',
-          onPaymentSelect: function(orderReference) {
+          onPaymentSelect: function(billingAgreement) {
             console.log("onPaymentSelect");
-            console.log("orderReference.getID()");
-            console.log(orderReference.getID());
+            console.log("billingAgreement.getID()");
+            console.log(billingAgreement.getID());
             // Replace this code with the action that you want to perform
             // after the payment method is chosen.
             // Ideally this would enable the next action for the buyer
@@ -103,38 +105,40 @@
             // See "Handling Errors" for more information.
           }
         }).bind("walletWidgetDiv");
+        new OffAmazonPayments.Widgets.Consent({
+          sellerId: 'A3QCQLYZKBHFRS',
+          amazonbillingAgreementId: amazonbillingAgreementId,
+          design: {
+            designMode:'responsive'
+          },
+          onReady: function(billingAgreementConsentStatus)
+        })
     } else {
       console.log("AmazonPayButton");
       OffAmazonPayments.Button("AmazonPayButton", "A3QCQLYZKBHFRS", {
         type: "LwA",
         color: "Gold",
         size: "small",
+
         authorization: function() {
-          loginOptions = {scope: "profile payments:widget payments:shipping_address", popup: "true"};
+          loginOptions = {scope: "profile payments:widget payments:shipping_address", popup: "true", sandbox: "true"};
           authRequest = amazon.Login.authorize (loginOptions,
             function(response) {
               addressConsentToken = response.access_token;
             });
         },
-        onSignIn: function (orderReference) {
-          var referenceId = orderReference.getAmazonOrderReferenceId();
+        onSignIn: function (billingAgreement) {
+          var referenceId = billingAgreement.getAmazonBillingAgreementId();
+
           if (!referenceId) {
             errorHandler(new Error('referenceId missing'));
           } else {
             window.location = "http://localhost:3000/orders/new" + '?referenceId=' + 
-              orderReference.getAmazonOrderReferenceId() + 
+              billingAgreement.getAmazonBillingAgreementId() + 
               "&access_token=" + addressConsentToken;
           }
         },
-        // authorization: function() {
-        //   loginOptions =
-        //   {scope: "profile payments:widget, payments:shipping_address", popup: "true", sandbox: "true"};
-        //   var referenceID = orderReferenceId.getAmazonOrderReferenceId();
-        //   authRequest = amazon.Login.authorize (loginOptions,
-        //   "http://localhost:3000/orders/new" + '?referenceID=' +
-        //     orderReference.getAmazonOrderReferenceId() +
-        //     "&access_token=" + addressConsentToken);
-        // },
+
         onError: function(error) {
           // your error handling code
           alert("error　on login");
@@ -145,11 +149,21 @@
     $(document).ready(function(){
       $("form").submit(function(){
         $("#order_access_token").val(window.access_token);
-        $("#order_order_reference_id").val(window.orderReferenceId);
+        $("#order_order_reference_id").val(window.billingAgreementId);
       });
     });
   }
 </script>
+
+<script type="text/javascript">
+
+  document.getElementById('Logout').onclick = function() {
+    amazon.Login.logout();
+    document.cookie = "amazon_Login_accessToken=; expires = nkdjldjvldfjkvd";
+     window.location = "http://localhost:3000";
+  };
+</script>
+
 <script async='async' type='text/javascript'
   src='https://static-fe.payments-amazon.com/OffAmazonPayments/jp/sandbox/lpa/js/Widgets.js'>
 </script>
@@ -161,9 +175,11 @@
 <br />
 
 <div id="addressBookWidgetDiv" style="width: 400px; height: 400px"></div>
+
 <div id="AmazonPayButton"></div>
-<div id="walletWidgetDiv">
-</div>
+
+<div id="walletWidgetDiv"></div>
+<div id="consentWidgetDiv"></div>
 
 
 
