@@ -109,9 +109,8 @@
         type: "LwA",
         color: "Gold",
         size: "small",
-
         authorization: function() {
-          loginOptions = {scope: "profile payments:widget payments:shipping_address", popup: "true", sandbox: "true"};
+          loginOptions = {scope: "profile payments:widget payments:shipping_address", popup: "true"};
           authRequest = amazon.Login.authorize (loginOptions,
             function(response) {
               addressConsentToken = response.access_token;
@@ -119,7 +118,6 @@
         },
         onSignIn: function (orderReference) {
           var referenceId = orderReference.getAmazonOrderReferenceId();
-
           if (!referenceId) {
             errorHandler(new Error('referenceId missing'));
           } else {
@@ -128,7 +126,15 @@
               "&access_token=" + addressConsentToken;
           }
         },
-
+        // authorization: function() {
+        //   loginOptions =
+        //   {scope: "profile payments:widget, payments:shipping_address", popup: "true", sandbox: "true"};
+        //   var referenceID = orderReferenceId.getAmazonOrderReferenceId();
+        //   authRequest = amazon.Login.authorize (loginOptions,
+        //   "http://localhost:3000/orders/new" + '?referenceID=' +
+        //     orderReference.getAmazonOrderReferenceId() +
+        //     "&access_token=" + addressConsentToken);
+        // },
         onError: function(error) {
           // your error handling code
           alert("error　on login");
@@ -144,13 +150,6 @@
     });
   }
 </script>
-
-<script type="text/javascript">
-  document.getElementById('Logout').onclick = function() {
-    amazon.Login.logout();
-  };
-</script>
-
 <script async='async' type='text/javascript'
   src='https://static-fe.payments-amazon.com/OffAmazonPayments/jp/sandbox/lpa/js/Widgets.js'>
 </script>
@@ -162,28 +161,7 @@
 <br />
 
 <div id="addressBookWidgetDiv" style="width: 400px; height: 400px"></div>
-
 <div id="AmazonPayButton"></div>
-<script type="text/javascript">
-  var authRequest;
-  OffAmazonPayments.Button("AmazonPayButton", "A3QCQLYZKBHFRS ", {
-    type: "LwA",
-    color: "Gold",
-    size: "small",
-
-    authorization: function() {
-      loginOptions =
-        {scope: "ENTER_SCOPES", popup: "true"};
-      authRequest = amazon.Login.authorize (loginOptions,
-        "http://localhost:3000/orders/new");
-    },
-    onError: function(error) {
-      // your error handling code
-    }
-  });
-</script>
-
-
 <div id="walletWidgetDiv">
 </div>
 
